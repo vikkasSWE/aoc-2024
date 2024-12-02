@@ -1,56 +1,60 @@
-fn check_line(line: &[i32]) -> bool {
-    let mut increasing = Vec::new();
-    let mut safe = true;
-    for pair in line.windows(2) {
-        let a = pair[0];
-        let b = pair[1];
+use std::time::Instant;
 
-        let diff = a - b;
-
-        increasing.push(diff.is_positive());
-
-        if diff == 0 || diff.abs() > 3 {
-            safe = false;
-        }
+fn check_line_iter(mut line: impl Iterator<Item = i16>) -> bool {
+    let first = line.next().unwrap();
+    let mut prev = line.next().unwrap();
+    let mut diff = first - prev;
+    let increasing = diff.is_positive();
+    if diff == 0 || diff.abs() > 3 || increasing != diff.is_positive() {
+        return false;
     }
 
-    let all_increasing = increasing.iter().all(|v| *v);
-    let all_decreasing = increasing.iter().all(|v| !*v);
+    for next in line.by_ref() {
+        diff = prev - next;
+        if diff == 0 || diff.abs() > 3 || increasing != diff.is_positive() {
+            return false;
+        }
 
-    safe && all_increasing ^ all_decreasing
+        prev = next;
+    }
+
+    true
 }
 
+const INPUT: &str = include_str!("input.txt");
 fn main() {
-    let input = include_str!("input.txt");
+    let start = Instant::now();
 
     let mut safe_count = 0;
     let mut safe_count_part1 = 0;
-    for line_str in input.lines() {
+    INPUT.lines().for_each(|line_str| {
         let line = line_str
             .split_whitespace()
-            .map(|v| v.parse::<i32>().unwrap())
-            .collect::<Vec<_>>();
+            .map(|v| v.parse::<i16>().unwrap());
 
-        if check_line(&line) {
+        if check_line_iter(line.clone()) {
             safe_count += 1;
             safe_count_part1 += 1;
-            continue;
-        }
+        } else {
+            let count = line.clone().count();
+            for i in 0..count {
+                let mut new_line = line
+                    .clone()
+                    .enumerate()
+                    .filter(|&(index, _)| index != i)
+                    .map(|(_, item)| item);
 
-        for i in 0..line.len() {
-            let new_line: Vec<_> = line
-                .iter()
-                .enumerate()
-                .filter(|&(index, _)| index != i)
-                .map(|(_, &item)| item)
-                .collect();
-
-            if check_line(&new_line) {
-                safe_count += 1;
-                break;
+                if check_line_iter(&mut new_line) {
+                    safe_count += 1;
+                    break;
+                }
             }
         }
-    }
+    });
+
+    let end = start.elapsed().as_micros();
+
+    println!("{}", end);
 
     println!("Part 1: {}", safe_count_part1);
     println!("Part 2: {}", safe_count);
