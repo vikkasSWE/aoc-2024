@@ -22,6 +22,7 @@ fn main() {
     for c in INPUT.chars() {
         match token {
             Token::None => {
+                #[allow(clippy::if_same_then_else)]
                 if (c == 'm' || c == 'd') && count == 0 {
                     count += 1;
                 } else if (c == 'u' || c == 'o') && count == 1 {
@@ -83,7 +84,9 @@ fn main() {
                     token = Token::None;
                 }
             }
-            Token::Dont => {
+            Token::Dont =>
+            {
+                #[allow(clippy::if_same_then_else)]
                 if c == '\'' && count == 3 {
                     count += 1;
                 } else if c == 't' && count == 4 {
