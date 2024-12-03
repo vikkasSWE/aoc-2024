@@ -1,3 +1,5 @@
+use std::time::Instant;
+
 const INPUT: &str = include_str!("input.txt");
 
 #[derive(Debug, PartialEq, Eq)]
@@ -9,6 +11,7 @@ enum Token {
 }
 
 fn main() {
+    let start = Instant::now();
     let mut p1 = 0;
     let mut p2 = 0;
 
@@ -105,6 +108,8 @@ fn main() {
             }
         }
     }
+
+    println!("{}", start.elapsed().as_micros());
 
     println!("Part 1: {p1}");
     println!("Part 2: {p2}");
