@@ -12,7 +12,6 @@ fn main() {
     let array = input
         .chars()
         .filter(|c| *c != '\n' && *c != '\r')
-        .map(|c| c.to_ascii_lowercase())
         .collect::<Vec<char>>();
 
     let num_rows = input.lines().count();
@@ -66,51 +65,51 @@ fn main() {
 
             // Diagonals
 
-            if window[0][0] == 'x'
-                && window[1][1] == 'm'
-                && window[2][2] == 'a'
-                && window[3][3] == 's'
+            if window[0][0] == 'X'
+                && window[1][1] == 'M'
+                && window[2][2] == 'A'
+                && window[3][3] == 'S'
             {
                 p1 += 1;
             }
 
-            if window[3][3] == 'x'
-                && window[2][2] == 'm'
-                && window[1][1] == 'a'
-                && window[0][0] == 's'
+            if window[3][3] == 'X'
+                && window[2][2] == 'M'
+                && window[1][1] == 'A'
+                && window[0][0] == 'S'
             {
                 p1 += 1;
             }
 
-            if window[0][3] == 'x'
-                && window[1][2] == 'm'
-                && window[2][1] == 'a'
-                && window[3][0] == 's'
+            if window[0][3] == 'X'
+                && window[1][2] == 'M'
+                && window[2][1] == 'A'
+                && window[3][0] == 'S'
             {
                 p1 += 1;
             }
 
-            if window[3][0] == 'x'
-                && window[2][1] == 'm'
-                && window[1][2] == 'a'
-                && window[0][3] == 's'
+            if window[3][0] == 'X'
+                && window[2][1] == 'M'
+                && window[1][2] == 'A'
+                && window[0][3] == 'S'
             {
                 p1 += 1;
             }
 
             // Verticals
-            if window[0][0] == 'x'
-                && window[1][0] == 'm'
-                && window[2][0] == 'a'
-                && window[3][0] == 's'
+            if window[0][0] == 'X'
+                && window[1][0] == 'M'
+                && window[2][0] == 'A'
+                && window[3][0] == 'S'
             {
                 p1 += 1;
             }
 
-            if window[3][0] == 'x'
-                && window[2][0] == 'm'
-                && window[1][0] == 'a'
-                && window[0][0] == 's'
+            if window[3][0] == 'X'
+                && window[2][0] == 'M'
+                && window[1][0] == 'A'
+                && window[0][0] == 'S'
             {
                 p1 += 1;
             }
@@ -118,18 +117,18 @@ fn main() {
 
         // last verticals
         for i in 1..4 {
-            if window[0][i] == 'x'
-                && window[1][i] == 'm'
-                && window[2][i] == 'a'
-                && window[3][i] == 's'
+            if window[0][i] == 'X'
+                && window[1][i] == 'M'
+                && window[2][i] == 'A'
+                && window[3][i] == 'S'
             {
                 p1 += 1;
             }
 
-            if window[3][i] == 'x'
-                && window[2][i] == 'm'
-                && window[1][i] == 'a'
-                && window[0][i] == 's'
+            if window[3][i] == 'X'
+                && window[2][i] == 'M'
+                && window[1][i] == 'A'
+                && window[0][i] == 'S'
             {
                 p1 += 1;
             }
@@ -186,10 +185,10 @@ fn main() {
             };
 
             // Diagonals
-            if ((window[0][0] == 'm' && window[1][1] == 'a' && window[2][2] == 's')
-                || (window[2][2] == 'm' && window[1][1] == 'a' && window[0][0] == 's'))
-                && ((window[0][2] == 'm' && window[1][1] == 'a' && window[2][0] == 's')
-                    || (window[2][0] == 'm' && window[1][1] == 'a' && window[0][2] == 's'))
+            if ((window[0][0] == 'M' && window[1][1] == 'A' && window[2][2] == 'S')
+                || (window[2][2] == 'M' && window[1][1] == 'A' && window[0][0] == 'S'))
+                && ((window[0][2] == 'M' && window[1][1] == 'A' && window[2][0] == 'S')
+                    || (window[2][0] == 'M' && window[1][1] == 'A' && window[0][2] == 'S'))
             {
                 p2 += 1;
             }
