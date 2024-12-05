@@ -35,8 +35,6 @@ fn main() {
         }
     }
 
-    println!("half: {}", start.elapsed().as_micros());
-
     let mut p1 = 0;
     let mut p2 = 0;
     for update in updates.iter_mut() {
@@ -58,7 +56,7 @@ fn main() {
 
             p1 += middle;
         } else {
-            update.sort_by(|v1, v2| {
+            update.sort_unstable_by(|v1, v2| {
                 if rules.iter().any(|(r1, r2)| *v1 == *r1 && *v2 == *r2) {
                     Ordering::Less
                 } else {
