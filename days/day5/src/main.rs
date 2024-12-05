@@ -57,6 +57,6 @@ fn main() {
     }
 
     println!("Time: {}", start.elapsed().as_micros());
-    println!("Part 1: {p1}, Correct: 4924");
-    println!("Part 2: {p2}, Correct: 6085");
+    println!("Part 1: {p1}");
+    println!("Part 2: {p2}");
 }
