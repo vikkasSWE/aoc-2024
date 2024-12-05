@@ -22,7 +22,7 @@ fn check_line_iter(mut line: impl Iterator<Item = i16>) -> bool {
 }
 
 const INPUT: &str = include_str!("input.txt");
-fn main() {
+pub fn a() {
     let start = Instant::now();
 
     let mut safe_count = 0;

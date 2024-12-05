@@ -10,7 +10,7 @@ enum Token {
     None,
 }
 
-fn main() {
+pub fn a() {
     let start = Instant::now();
     let mut p1 = 0;
     let mut p2 = 0;

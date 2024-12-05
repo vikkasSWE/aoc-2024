@@ -2,7 +2,7 @@ use std::time::Instant;
 
 const INPUT: &str = include_str!("input.txt");
 
-fn main() {
+pub fn a() {
     let startup = Instant::now();
     let input = INPUT.trim_end_matches("\n");
 
