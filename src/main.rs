@@ -1,26 +1,27 @@
 use std::time::Instant;
 
-fn main() {
-    profile(day5::a);
-    profile(day5::b);
-    // day2::a();
-    // day3::a();
-    // day4::a();
-    // day5::a();
+fn profile(day: &str, a: fn() -> i32, b: fn() -> i32) {
+    println!("{day}");
 
-    // day1::b();
-    // day2::b();
-    // day3::b();
-    // day4::b();
-    // day5::b();
+    let p1t = Instant::now();
+    let p1 = a();
+    let p1_time = p1t.elapsed().as_micros();
+
+    let p2t = Instant::now();
+    let p2 = b();
+    let p2_time = p2t.elapsed().as_micros();
+
+    println!("Part 1 {}, time: {}us", p1, p1_time);
+    println!("Part 2 {}, time: {}us", p2, p2_time);
+
+    println!("----------------------------");
 }
 
-fn profile(a: fn() -> i32) {
+fn main() {
     println!("----------------------------");
-    println!("Day 1 Part a:");
-    let start = Instant::now();
-    let res = a();
-    println!("Time {}", start.elapsed().as_micros());
-    println!("Res {}", res);
-    println!("----------------------------")
+    profile("Day 1", day1::a, day1::b);
+    profile("Day 2", day2::a, day2::b);
+    profile("Day 3", day3::a, day3::b);
+    profile("Day 4", day4::a, day4::b);
+    profile("Day 5", day5::a, day5::b);
 }

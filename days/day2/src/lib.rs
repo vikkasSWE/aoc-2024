@@ -22,7 +22,7 @@ fn check_line_iter(mut line: impl Iterator<Item = i16>) -> bool {
 }
 
 const INPUT: &str = include_str!("input.txt");
-pub fn a() {
+pub fn a() -> i32 {
     let start = Instant::now();
 
     let mut safe_count = 0;
@@ -54,8 +54,40 @@ pub fn a() {
 
     let end = start.elapsed().as_micros();
 
-    println!("{}", end);
+    safe_count_part1
+}
 
-    println!("Part 1: {}", safe_count_part1);
-    println!("Part 2: {}", safe_count);
+pub fn b() -> i32 {
+    let start = Instant::now();
+
+    let mut safe_count = 0;
+    let mut safe_count_part1 = 0;
+    INPUT.lines().for_each(|line_str| {
+        let line = line_str
+            .split_whitespace()
+            .map(|v| v.parse::<i16>().unwrap());
+
+        if check_line_iter(line.clone()) {
+            safe_count += 1;
+            safe_count_part1 += 1;
+        } else {
+            let count = line.clone().count();
+            for i in 0..count {
+                let mut new_line = line
+                    .clone()
+                    .enumerate()
+                    .filter(|&(index, _)| index != i)
+                    .map(|(_, item)| item);
+
+                if check_line_iter(&mut new_line) {
+                    safe_count += 1;
+                    break;
+                }
+            }
+        }
+    });
+
+    let end = start.elapsed().as_micros();
+
+    safe_count
 }

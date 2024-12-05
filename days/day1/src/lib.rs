@@ -1,4 +1,7 @@
 pub fn a() -> i32 {
-    // println!("Hello, world!");
+    0
+}
+
+pub fn b() -> i32 {
     0
 }
