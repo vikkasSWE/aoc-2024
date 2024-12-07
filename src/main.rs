@@ -24,4 +24,5 @@ fn main() {
     profile("Day 3", day3::a, day3::b);
     profile("Day 4", day4::a, day4::b);
     profile("Day 5", day5::a, day5::b);
+    profile("Day 6", day6::a, day6::b);
 }
