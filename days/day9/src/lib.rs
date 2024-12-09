@@ -93,14 +93,9 @@ pub fn b() -> usize {
     let mut file_id = 0;
     let mut index = 0;
     let mut count = 0;
-
     let mut moved_ids = HashSet::new();
 
-    while file_id != max_id + 1 {
-        let Some(file) = entries.remove(&file_id) else {
-            file_id += 1;
-            continue;
-        };
+    while let Some(file) = entries.remove(&file_id) {
         let mut free_space = file.free;
 
         if !moved_ids.contains(&file_id) {
@@ -114,14 +109,13 @@ pub fn b() -> usize {
             }
         }
 
-        while let Some(entry_that_fits_file_id) =
-            find_entry_that_fits(&mut entries, free_space, max_id, &moved_ids)
+        while let Some((id, removed)) =
+            find_entry_that_fits(&entries, free_space, max_id, file_id, &moved_ids)
         {
-            let removed = entries.get(&entry_that_fits_file_id).unwrap();
-            moved_ids.insert(entry_that_fits_file_id);
+            moved_ids.insert(id);
 
             for _ in 0..removed.size {
-                count += entry_that_fits_file_id * index;
+                count += id * index;
                 index += 1;
             }
 
@@ -129,22 +123,24 @@ pub fn b() -> usize {
         }
 
         index += free_space;
-
         file_id += 1;
     }
+
+    assert!(count == 6467290479134);
 
     count
 }
 
-fn find_entry_that_fits(
-    entries: &mut HashMap<usize, File>,
+fn find_entry_that_fits<'a>(
+    entries: &'a HashMap<usize, File>,
     free_space: usize,
     max_id: usize,
+    min_id: usize,
     moved_ids: &HashSet<usize>,
-) -> Option<usize> {
+) -> Option<(usize, &'a File)> {
     let mut file_id = max_id;
 
-    while file_id != 0 {
+    while file_id != min_id {
         if moved_ids.contains(&file_id) {
             file_id -= 1;
             continue;
@@ -156,7 +152,7 @@ fn find_entry_that_fits(
         };
 
         if entry.size <= free_space {
-            return Some(file_id);
+            return Some((file_id, entry));
         }
 
         file_id -= 1;
