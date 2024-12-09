@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 fn check_line_iter(mut line: impl Iterator<Item = i16>) -> bool {
     let first = line.next().unwrap();
     let mut prev = line.next().unwrap();
@@ -23,8 +21,6 @@ fn check_line_iter(mut line: impl Iterator<Item = i16>) -> bool {
 
 const INPUT: &str = include_str!("input.txt");
 pub fn a() -> i32 {
-    let start = Instant::now();
-
     let mut safe_count = 0;
     let mut safe_count_part1 = 0;
     INPUT.lines().for_each(|line_str| {
@@ -51,15 +47,11 @@ pub fn a() -> i32 {
             }
         }
     });
-
-    let end = start.elapsed().as_micros();
 
     safe_count_part1
 }
 
 pub fn b() -> i32 {
-    let start = Instant::now();
-
     let mut safe_count = 0;
     let mut safe_count_part1 = 0;
     INPUT.lines().for_each(|line_str| {
@@ -86,8 +78,6 @@ pub fn b() -> i32 {
             }
         }
     });
-
-    let end = start.elapsed().as_micros();
 
     safe_count
 }

@@ -1,6 +1,6 @@
-use std::time::Instant;
+use std::{fmt::Display, time::Instant};
 
-fn profile(day: &str, a: fn() -> i32, b: fn() -> i32) {
+fn profile<T: Display, V: Display>(day: &str, a: fn() -> T, b: fn() -> V) {
     println!("{day}");
 
     let p1t = Instant::now();
@@ -19,10 +19,11 @@ fn profile(day: &str, a: fn() -> i32, b: fn() -> i32) {
 
 fn main() {
     println!("----------------------------");
-    profile("Day 1", day1::a, day1::b);
-    profile("Day 2", day2::a, day2::b);
-    profile("Day 3", day3::a, day3::b);
-    profile("Day 4", day4::a, day4::b);
-    profile("Day 5", day5::a, day5::b);
-    profile("Day 6", day6::a, day6::b);
+    // profile("Day 1", day1::a, day1::b);
+    // profile("Day 2", day2::a, day2::b);
+    // profile("Day 3", day3::a, day3::b);
+    // profile("Day 4", day4::a, day4::b);
+    // profile("Day 5", day5::a, day5::b);
+    // profile("Day 6", day6::a, day6::b);
+    profile("Day 7", day7::a, day7::b);
 }

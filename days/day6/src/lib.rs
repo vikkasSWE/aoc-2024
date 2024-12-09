@@ -78,7 +78,7 @@ pub fn b() -> i32 {
 
     let mut start = (0, 0);
 
-    let mut dir = Dir::Up;
+    let mut dir;
 
     for (row, line) in INPUT.lines().enumerate() {
         for (col, c) in line

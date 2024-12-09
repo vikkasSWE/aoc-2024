@@ -1,5 +1,3 @@
-use std::time::Instant;
-
 const INPUT: &str = include_str!("input.txt");
 
 #[derive(Debug, PartialEq, Eq)]
@@ -11,15 +9,12 @@ enum Token {
 }
 
 pub fn a() -> i32 {
-    let start = Instant::now();
     let mut p1 = 0;
-    let mut p2 = 0;
 
     let mut count = 0;
     let mut a = 0;
     let mut b = 0;
 
-    let mut enable = true;
     let mut token = Token::None;
 
     for c in INPUT.chars() {
@@ -65,9 +60,6 @@ pub fn a() -> i32 {
                 } else if count == 7 && c.is_numeric() {
                     b = b * 10 + c.to_digit(10).unwrap() as i32
                 } else if c == ')' && count == 7 {
-                    if enable {
-                        p2 += a * b;
-                    }
                     p1 += a * b;
 
                     count = 0;
@@ -79,10 +71,6 @@ pub fn a() -> i32 {
             }
             Token::Do => {
                 if c == ')' && count == 3 {
-                    enable = true;
-                    count = 0;
-                    token = Token::None;
-                } else {
                     count = 0;
                     token = Token::None;
                 }
@@ -97,8 +85,6 @@ pub fn a() -> i32 {
                 } else if c == '(' && count == 5 {
                     count += 1;
                 } else if c == ')' && count == 6 {
-                    enable = false;
-
                     count = 0;
                     token = Token::None;
                 } else {
@@ -113,8 +99,6 @@ pub fn a() -> i32 {
 }
 
 pub fn b() -> i32 {
-    let start = Instant::now();
-    let mut p1 = 0;
     let mut p2 = 0;
 
     let mut count = 0;
@@ -170,7 +154,6 @@ pub fn b() -> i32 {
                     if enable {
                         p2 += a * b;
                     }
-                    p1 += a * b;
 
                     count = 0;
                     token = Token::None;
