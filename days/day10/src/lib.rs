@@ -1,4 +1,4 @@
-const INPUT: &str = include_str!("input.txt");
+const INPUT: &str = include_str!("input_jonathan.txt");
 
 struct Map<T> {
     rows: usize,
