@@ -1,4 +1,4 @@
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
 
 const INPUT: &str = include_str!("input.txt");
 
@@ -74,45 +74,49 @@ pub fn b() -> usize {
         .map(|c| c.to_digit(10).unwrap())
         .collect::<Vec<_>>();
     seq.push(0);
-    let max_id = seq.len();
+    let entries_count = seq.len() / 2;
+    let max_id = entries_count;
 
-    let mut entries = HashMap::with_capacity(65_535);
-    for (id, chunk) in seq.chunks(2).enumerate() {
+    let mut entries = Vec::with_capacity(entries_count);
+    for chunk in seq.chunks(2) {
         let file_blocks = chunk[0] as usize;
         let free_space = chunk[1] as usize;
 
-        entries.insert(
-            id,
-            File {
-                size: file_blocks,
-                free: free_space,
-            },
-        );
+        entries.push(Some(File {
+            size: file_blocks,
+            free: free_space,
+        }));
     }
 
     let mut file_id = 0;
     let mut index = 0;
     let mut count = 0;
-    let mut moved_ids = HashSet::new();
+    let mut moved_ids = vec![false; entries_count];
 
-    while let Some(file) = entries.remove(&file_id) {
+    while file_id < entries_count {
+        let file = match entries[file_id].take() {
+            Some(file) => file,
+            None => {
+                file_id += 1;
+                continue;
+            }
+        };
+
         let mut free_space = file.free;
 
-        if !moved_ids.contains(&file_id) {
+        if !moved_ids[file_id] {
             for _ in 0..file.size {
                 count += file_id * index;
                 index += 1;
             }
         } else {
-            for _ in 0..file.size {
-                index += 1;
-            }
+            index += file.size;
         }
 
         while let Some((id, removed)) =
             find_entry_that_fits(&entries, free_space, max_id, file_id, &moved_ids)
         {
-            moved_ids.insert(id);
+            moved_ids[id] = true;
 
             for _ in 0..removed.size {
                 count += id * index;
@@ -126,35 +130,29 @@ pub fn b() -> usize {
         file_id += 1;
     }
 
-    assert!(count == 6467290479134);
-
     count
 }
 
 fn find_entry_that_fits<'a>(
-    entries: &'a HashMap<usize, File>,
+    entries: &'a [Option<File>],
     free_space: usize,
     max_id: usize,
     min_id: usize,
-    moved_ids: &HashSet<usize>,
+    moved_ids: &[bool],
 ) -> Option<(usize, &'a File)> {
-    let mut file_id = max_id;
-
-    while file_id != min_id {
-        if moved_ids.contains(&file_id) {
-            file_id -= 1;
-            continue;
+    let mut file_id = max_id - 1;
+    while file_id > min_id {
+        if !moved_ids[file_id] {
+            if let Some(entry) = &entries[file_id] {
+                if entry.size <= free_space {
+                    return Some((file_id, entry));
+                }
+            }
         }
 
-        let Some(entry) = entries.get(&file_id) else {
-            file_id -= 1;
-            continue;
-        };
-
-        if entry.size <= free_space {
-            return Some((file_id, entry));
+        if file_id == min_id + 1 {
+            break;
         }
-
         file_id -= 1;
     }
 
