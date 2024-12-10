@@ -27,5 +27,6 @@ fn main() {
     // profile("Day 6", day6::a, day6::b);
     // profile("Day 7", day7::a, day7::b);
     // profile("Day 8", day8::a, day8::b);
-    profile("Day 9", day9::a, day9::b);
+    // profile("Day 9", day9::a, day9::b);
+    profile("Day 10", day10::a, day10::b);
 }

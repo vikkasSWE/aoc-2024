@@ -13,6 +13,7 @@ day6 = { path = "days/day6" }
 day7 = { path = "days/day7" }
 day8 = { path = "days/day8" }
 day9 = { path = "days/day9" }
+day10 = { path = "days/day10" }
 
 [workspace]
 members = [
@@ -25,5 +26,6 @@ members = [
     "days/day7",
     "days/day8",
     "days/day9",
+    "days/day10",
 ]
 resolver = "2"
