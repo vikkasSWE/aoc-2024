@@ -1,11 +1,21 @@
-use std::{
-    collections::{HashMap, HashSet},
-    time::{Duration, Instant},
-};
-
 const INPUT: &str = include_str!("input.txt");
 
-#[derive(Debug)]
+struct Map<T> {
+    cols: usize,
+    data: Vec<T>,
+}
+
+impl<T> Map<T> {
+    fn get(&self, pos: &(usize, usize)) -> &T {
+        &self.data[pos.0 * self.cols + pos.1]
+    }
+
+    fn get_mut(&mut self, pos: &(usize, usize)) -> &mut T {
+        &mut self.data[pos.0 * self.cols + pos.1]
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
 enum Dir {
     Up,
     Down,
@@ -13,156 +23,174 @@ enum Dir {
     Right,
 }
 
-pub fn a() -> i32 {
-    let mut map = HashMap::new();
-
-    let mut start = (0, 0);
-
-    let mut dir = Dir::Up;
-
-    for (row, line) in INPUT.lines().enumerate() {
-        for (col, c) in line
-            .chars()
-            .filter(|c| *c != '\r' || *c != '\n')
-            .enumerate()
-        {
-            map.insert((row as i32, col as i32), c);
-            if c == '^' {
-                start = (row as i32, col as i32);
-            }
+impl Dir {
+    fn turn_right(&self) -> Dir {
+        match self {
+            Dir::Up => Dir::Right,
+            Dir::Right => Dir::Down,
+            Dir::Down => Dir::Left,
+            Dir::Left => Dir::Up,
         }
     }
 
-    let mut visited = HashSet::new();
-    visited.insert(start);
-
-    loop {
-        let look_ahead = match dir {
+    fn vector(&self) -> (isize, isize) {
+        match self {
             Dir::Up => (-1, 0),
             Dir::Down => (1, 0),
             Dir::Left => (0, -1),
             Dir::Right => (0, 1),
-        };
-        if let Some(value) = map.get(&(start.0 + look_ahead.0, start.1 + look_ahead.1)) {
-            if *value == '#' {
-                dir = match dir {
-                    Dir::Up => Dir::Right,
-                    Dir::Right => Dir::Down,
-                    Dir::Down => Dir::Left,
-                    Dir::Left => Dir::Up,
-                };
+        }
+    }
+}
 
-                visited.insert(start);
-            } else {
-                visited.insert(start);
+fn visit_position(visited: &mut [bool], cols: usize, pos: (usize, usize), count: &mut i32) {
+    let index = pos.0 * cols + pos.1;
+    if !visited[index] {
+        visited[index] = true;
+        *count += 1;
+    }
+}
+
+pub fn a() -> i32 {
+    let lines: Vec<&str> = INPUT.lines().collect();
+    let rows = lines.len();
+    let cols = lines[0].len();
+
+    let mut data = Vec::with_capacity(rows * cols);
+    let mut start = (0, 0);
+
+    for (row, line) in lines.iter().enumerate() {
+        for (col, c) in line.chars().enumerate() {
+            data.push(c);
+            if c == '^' {
+                start = (row, col);
             }
-        } else {
-            visited.insert(start);
+        }
+    }
 
+    let map = Map { cols, data };
+
+    let mut visited = vec![false; rows * cols];
+    let mut visited_count = 0;
+
+    let mut dir = Dir::Up;
+    let mut pos = start;
+
+    visit_position(&mut visited, cols, pos, &mut visited_count);
+
+    loop {
+        let dir_vec = dir.vector();
+        let next = (
+            (pos.0 as isize + dir_vec.0) as usize,
+            (pos.1 as isize + dir_vec.1) as usize,
+        );
+
+        if next.0 >= rows || next.1 >= cols {
             break;
         }
 
-        match dir {
-            Dir::Up => start.0 -= 1,
-            Dir::Down => start.0 += 1,
-            Dir::Left => start.1 -= 1,
-            Dir::Right => start.1 += 1,
+        let ahead_value = *map.get(&next);
+        if ahead_value == '#' {
+            dir = dir.turn_right();
+            visit_position(&mut visited, cols, pos, &mut visited_count);
+        } else {
+            pos = (next.0, next.1);
+            visit_position(&mut visited, cols, pos, &mut visited_count);
         }
     }
 
-    visited.len() as i32
+    visited_count
+}
+
+fn visited_index(cols: usize, pos: &(usize, usize), dir: Dir) -> usize {
+    let dir_index = match dir {
+        Dir::Up => 0,
+        Dir::Right => 1,
+        Dir::Down => 2,
+        Dir::Left => 3,
+    };
+    (pos.0 * cols + pos.1) * 4 + dir_index
 }
 
 pub fn b() -> i32 {
-    let mut map = HashMap::new();
+    let lines: Vec<&str> = INPUT.lines().collect();
+    let rows = lines.len();
+    let cols = lines[0].len();
+
+    let mut data = Vec::with_capacity(rows * cols);
 
     let mut start = (0, 0);
-
-    let mut dir;
-
-    for (row, line) in INPUT.lines().enumerate() {
-        for (col, c) in line
-            .chars()
-            .filter(|c| *c != '\r' || *c != '\n')
-            .enumerate()
-        {
-            map.insert((row as i32, col as i32), c);
+    for (row, line) in lines.iter().enumerate() {
+        for (col, c) in line.chars().enumerate() {
+            data.push(c);
             if c == '^' {
-                start = (row as i32, col as i32);
+                start = (row, col);
             }
         }
     }
 
+    let mut map = Map { cols, data };
+
     let mut count = 0;
-    for xy in map.keys() {
-        let mut modded_map = map.clone();
-        if modded_map.get(xy) == Some(&'^') || modded_map.get(xy) == Some(&'#') {
-            continue;
-        }
-        modded_map.insert(*xy, '#');
+    let mut visited = vec![false; rows * cols * 4];
 
-        let mut new_start = start;
-        dir = Dir::Up;
+    for row in 0..rows {
+        for col in 0..cols {
+            let xy = (row, col);
 
-        let time = Instant::now();
+            let original = *map.get(&xy);
+            *map.get_mut(&xy) = '#';
 
-        'inner: loop {
-            if time.elapsed() > Duration::from_millis(2) {
-                count += 1;
-                break 'inner;
-            }
+            let mut new_start = start;
+            let mut dir = Dir::Up;
 
-            let look_ahead = match dir {
-                Dir::Up => (-1, 0),
-                Dir::Down => (1, 0),
-                Dir::Left => (0, -1),
-                Dir::Right => (0, 1),
-            };
-            if let Some(value) =
-                modded_map.get(&(new_start.0 + look_ahead.0, new_start.1 + look_ahead.1))
-            {
-                if *value == '#' {
-                    dir = match dir {
-                        Dir::Up => Dir::Right,
-                        Dir::Right => Dir::Down,
-                        Dir::Down => Dir::Left,
-                        Dir::Left => Dir::Up,
-                    };
+            visited.fill(false);
+
+            'inner: loop {
+                let idx = visited_index(cols, &new_start, dir);
+                if visited[idx] {
+                    count += 1;
+                    break 'inner;
+                } else {
+                    visited[idx] = true;
                 }
-            } else {
-                break 'inner;
-            }
 
-            // Walk
-            loop {
-                let look_ahead = match dir {
-                    Dir::Up => (-1, 0),
-                    Dir::Down => (1, 0),
-                    Dir::Left => (0, -1),
-                    Dir::Right => (0, 1),
-                };
+                let dir_vec = dir.vector();
+                let ahead = (
+                    (new_start.0 as isize + dir_vec.0) as usize,
+                    (new_start.1 as isize + dir_vec.1) as usize,
+                );
 
-                if let Some(value) =
-                    modded_map.get(&(new_start.0 + look_ahead.0, new_start.1 + look_ahead.1))
-                {
-                    if *value != '#' {
-                        match dir {
-                            Dir::Up => new_start.0 -= 1,
-                            Dir::Down => new_start.0 += 1,
-                            Dir::Left => new_start.1 -= 1,
-                            Dir::Right => new_start.1 += 1,
+                if ahead.0 >= rows || ahead.1 >= cols {
+                    break 'inner;
+                }
+
+                let ahead_value = *map.get(&ahead);
+                if ahead_value == '#' {
+                    dir = dir.turn_right();
+                } else {
+                    loop {
+                        let dir_vec = dir.vector();
+                        let next = (
+                            (new_start.0 as isize + dir_vec.0) as usize,
+                            (new_start.1 as isize + dir_vec.1) as usize,
+                        );
+                        if next.0 >= rows || next.1 >= cols {
+                            break 'inner;
                         }
-                        break;
-                    } else {
-                        dir = match dir {
-                            Dir::Up => Dir::Right,
-                            Dir::Right => Dir::Down,
-                            Dir::Down => Dir::Left,
-                            Dir::Left => Dir::Up,
-                        };
+
+                        let map_value = *map.get(&next);
+                        if map_value != '#' {
+                            new_start = next;
+                            break;
+                        } else {
+                            dir = dir.turn_right();
+                        }
                     }
                 }
             }
+
+            *map.get_mut(&xy) = original;
         }
     }
 
