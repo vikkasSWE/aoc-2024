@@ -3,15 +3,15 @@ use std::collections::{HashMap, HashSet};
 const INPUT: &str = include_str!("input.txt");
 
 pub fn a() -> u32 {
-    let mut map = HashMap::new();
+    let mut map: HashMap<(isize, isize), u32> = HashMap::new();
     let mut starting_positions = Vec::new();
 
     for (row, line) in INPUT.lines().enumerate() {
         for (col, c) in line.chars().enumerate() {
             let value = c.to_digit(10).unwrap_or(20);
-            map.insert((row, col), value);
+            map.insert((row as isize, col as isize), value);
             if value == 0 {
-                starting_positions.push((row, col));
+                starting_positions.push((row as isize, col as isize));
             }
         }
     }
@@ -27,9 +27,9 @@ pub fn a() -> u32 {
 }
 
 fn find_trail(
-    pos: (usize, usize),
-    map: &HashMap<(usize, usize), u32>,
-    used: &mut HashSet<(usize, usize)>,
+    pos: (isize, isize),
+    map: &HashMap<(isize, isize), u32>,
+    used: &mut HashSet<(isize, isize)>,
     depth: u32,
     part_b: bool,
 ) -> u32 {
@@ -44,32 +44,15 @@ fn find_trail(
 
     let mut score = 0;
 
-    let down_one = (pos.0 + 1, pos.1);
-    let right_one = (pos.0, pos.1 + 1);
-    let left_one = (pos.0, pos.1 - 1);
-    let up_one = (pos.0 - 1, pos.1);
+    const DIRECTIONS: [(isize, isize); 4] = [(1, 0), (0, 1), (0, -1), (-1, 0)];
 
-    if let Some(down) = map.get(&down_one) {
-        if *down == depth + 1 {
-            score += find_trail(down_one, map, used, depth + 1, part_b);
-        }
-    }
+    for dir in DIRECTIONS {
+        let ahead = (pos.0 + dir.0, pos.1 + dir.1);
 
-    if let Some(right) = map.get(&right_one) {
-        if *right == depth + 1 {
-            score += find_trail(right_one, map, used, depth + 1, part_b);
-        }
-    }
-
-    if let Some(left) = map.get(&left_one) {
-        if *left == depth + 1 {
-            score += find_trail(left_one, map, used, depth + 1, part_b);
-        }
-    }
-
-    if let Some(up) = map.get(&up_one) {
-        if *up == depth + 1 {
-            score += find_trail(up_one, map, used, depth + 1, part_b);
+        if let Some(next) = map.get(&ahead) {
+            if *next == depth + 1 {
+                score += find_trail((ahead.0, ahead.1), map, used, depth + 1, part_b);
+            }
         }
     }
 
@@ -83,9 +66,9 @@ pub fn b() -> u32 {
     for (row, line) in INPUT.lines().enumerate() {
         for (col, c) in line.chars().enumerate() {
             let value = c.to_digit(10).unwrap_or(20);
-            map.insert((row, col), value);
+            map.insert((row as isize, col as isize), value);
             if value == 0 {
-                starting_positions.push((row, col));
+                starting_positions.push((row as isize, col as isize));
             }
         }
     }
