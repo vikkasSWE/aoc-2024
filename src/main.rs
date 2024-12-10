@@ -12,8 +12,18 @@ fn profile<T: Display, V: Display>(day: &str, a: fn() -> T, b: fn() -> V) -> u12
     let p2_time = p2t.elapsed().as_micros();
     let res = p1t.elapsed().as_micros();
 
-    println!("Part 1 {}, time: {}us", p1, p1_time);
-    println!("Part 2 {}, time: {}us", p2, p2_time);
+    println!(
+        "Part 1 {}, time: {}ms, {}us",
+        p1,
+        p1_time / 1000,
+        p1_time % 1000
+    );
+    println!(
+        "Part 2 {}, time: {}ms, {}us",
+        p2,
+        p2_time / 1000,
+        p2_time % 1000
+    );
 
     println!("----------------------------");
 
