@@ -6,40 +6,38 @@ struct Map<T> {
 }
 
 impl<T> Map<T> {
+    #[inline(always)]
     fn get(&self, pos: &(usize, usize)) -> &T {
-        &self.data[pos.0 * self.cols + pos.1]
+        unsafe { self.data.get_unchecked(pos.0 * self.cols + pos.1) }
     }
 
+    #[inline(always)]
     fn get_mut(&mut self, pos: &(usize, usize)) -> &mut T {
-        &mut self.data[pos.0 * self.cols + pos.1]
+        unsafe { self.data.get_unchecked_mut(pos.0 * self.cols + pos.1) }
     }
 }
 
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[repr(u8)]
+#[allow(dead_code)]
 enum Dir {
-    Up,
-    Down,
-    Left,
-    Right,
+    Up = 0,
+    Right = 1,
+    Down = 2,
+    Left = 3,
 }
 
 impl Dir {
-    fn turn_right(&self) -> Dir {
-        match self {
-            Dir::Up => Dir::Right,
-            Dir::Right => Dir::Down,
-            Dir::Down => Dir::Left,
-            Dir::Left => Dir::Up,
-        }
+    const DIR_VECTORS: [(isize, isize); 4] = [(-1, 0), (0, 1), (1, 0), (0, -1)];
+
+    #[inline(always)]
+    fn turn_right(self) -> Dir {
+        unsafe { std::mem::transmute(((self as u8) + 1) & 3) }
     }
 
-    fn vector(&self) -> (isize, isize) {
-        match self {
-            Dir::Up => (-1, 0),
-            Dir::Down => (1, 0),
-            Dir::Left => (0, -1),
-            Dir::Right => (0, 1),
-        }
+    #[inline(always)]
+    fn vector(self) -> (isize, isize) {
+        Self::DIR_VECTORS[self as usize]
     }
 }
 
@@ -103,13 +101,7 @@ pub fn a() -> i32 {
 }
 
 fn visited_index(cols: usize, pos: &(usize, usize), dir: Dir) -> usize {
-    let dir_index = match dir {
-        Dir::Up => 0,
-        Dir::Right => 1,
-        Dir::Down => 2,
-        Dir::Left => 3,
-    };
-    (pos.0 * cols + pos.1) * 4 + dir_index
+    (pos.0 * cols + pos.1) * 4 + dir as usize
 }
 
 pub fn b() -> i32 {
@@ -132,10 +124,12 @@ pub fn b() -> i32 {
     let mut map = Map { cols, data };
 
     let mut count = 0;
-    let mut visited = vec![false; rows * cols * 4];
+    let mut visited = vec![0; rows * cols * 4];
+    let mut current_generation = 1;
 
     for row in 0..rows {
         for col in 0..cols {
+            current_generation += 1;
             let xy = (row, col);
 
             let original = *map.get(&xy);
@@ -144,15 +138,13 @@ pub fn b() -> i32 {
             let mut new_start = start;
             let mut dir = Dir::Up;
 
-            visited.fill(false);
-
             'inner: loop {
-                let idx = visited_index(cols, &new_start, dir);
-                if visited[idx] {
+                let index = visited_index(cols, &new_start, dir);
+                if visited[index] == current_generation {
                     count += 1;
                     break 'inner;
                 } else {
-                    visited[idx] = true;
+                    visited[index] = current_generation;
                 }
 
                 let dir_vec = dir.vector();
