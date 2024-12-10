@@ -7,29 +7,34 @@ struct Map<T> {
 }
 
 impl<T> Map<T> {
-    fn get(&self, pos: &(usize, usize)) -> Option<&T> {
-        if pos.0 < self.rows && pos.1 < self.cols {
-            Some(&self.data[pos.0 * self.cols + pos.1])
-        } else {
-            None
-        }
+    #[inline(always)]
+    fn get_unchecked(&self, pos: &(usize, usize)) -> &T {
+        unsafe { self.data.get_unchecked(pos.0 * self.cols + pos.1) }
     }
 }
 
-fn find_trail_a(pos: (usize, usize), map: &Map<u32>, used: &mut [bool], depth: u32) -> u32 {
+const DIRECTIONS: [(isize, isize); 4] = [(1, 0), (0, 1), (0, -1), (-1, 0)];
+
+#[inline(always)]
+fn find_trail_a(
+    pos: (usize, usize),
+    map: &Map<u8>,
+    used: &mut [u32],
+    depth: u8,
+    generation: u32,
+) -> u32 {
     if depth == 9 {
         let index = pos.0 * map.cols + pos.1;
-        if used[index] {
+        if used[index] == generation {
             return 0;
         } else {
-            used[index] = true;
+            used[index] = generation;
             return 1;
         }
     }
 
     let mut score = 0;
 
-    const DIRECTIONS: [(isize, isize); 4] = [(1, 0), (0, 1), (0, -1), (-1, 0)];
     for (dir_row, dir_col) in &DIRECTIONS {
         let next_row = pos.0 as isize + dir_row;
         let next_col = pos.1 as isize + dir_col;
@@ -43,10 +48,10 @@ fn find_trail_a(pos: (usize, usize), map: &Map<u32>, used: &mut [bool], depth: u
         }
 
         let next_pos = (next_row as usize, next_col as usize);
-        if let Some(&next) = map.get(&next_pos) {
-            if next == depth + 1 {
-                score += find_trail_a(next_pos, map, used, depth + 1);
-            }
+        let next = map.get_unchecked(&next_pos);
+
+        if *next == depth + 1 {
+            score += find_trail_a(next_pos, map, used, depth + 1, generation);
         }
     }
 
@@ -54,43 +59,57 @@ fn find_trail_a(pos: (usize, usize), map: &Map<u32>, used: &mut [bool], depth: u
 }
 
 pub fn a() -> u32 {
-    let lines: Vec<&str> = INPUT.lines().collect();
-    let rows = lines.len();
-    let cols = lines[0].len();
+    let mut lines_iter = INPUT.lines();
+    let first_line = lines_iter.next().unwrap();
+    let rows = 1 + lines_iter.clone().count();
+    let cols = first_line.len();
 
-    let mut data = Vec::with_capacity(rows * cols);
-    let mut starting_positions = Vec::new();
+    let mut data = vec![0u8; rows * cols];
+    let mut starting_positions = Vec::with_capacity(256);
 
-    for (row, line) in lines.iter().enumerate() {
-        for (col, c) in line.chars().enumerate() {
-            let value = c.to_digit(10).unwrap_or(20);
+    {
+        let bytes = first_line.as_bytes();
+        for col in 0..cols {
+            let value = bytes[col] - b'0';
+            if value == 0 {
+                starting_positions.push((0, col));
+            }
+            data[col] = value;
+        }
+    }
+
+    for (row, line) in lines_iter.enumerate() {
+        let row = row + 1;
+        let bytes = line.as_bytes();
+
+        for col in 0..cols {
+            let value = bytes[col] - b'0';
             if value == 0 {
                 starting_positions.push((row, col));
             }
-            data.push(value);
+            data[row * cols + col] = value;
         }
     }
 
     let map = Map { rows, cols, data };
 
     let mut score = 0;
-
-    for start in starting_positions {
-        let mut used = vec![false; rows * cols];
-        score += find_trail_a(start, &map, &mut used, 0);
+    let mut used = vec![0; rows * cols];
+    for (generation, start) in starting_positions.into_iter().enumerate() {
+        score += find_trail_a(start, &map, &mut used, 0, (generation + 1) as u32);
     }
 
     score
 }
 
-fn find_trail_b(pos: (usize, usize), map: &Map<u32>, depth: u32) -> u32 {
+#[inline(always)]
+fn find_trail_b(pos: (usize, usize), map: &Map<u8>, depth: u8) -> u32 {
     if depth == 9 {
         return 1;
     }
 
     let mut score = 0;
 
-    const DIRECTIONS: [(isize, isize); 4] = [(1, 0), (0, 1), (0, -1), (-1, 0)];
     for (dir_row, dir_col) in &DIRECTIONS {
         let next_row = pos.0 as isize + dir_row;
         let next_col = pos.1 as isize + dir_col;
@@ -104,10 +123,10 @@ fn find_trail_b(pos: (usize, usize), map: &Map<u32>, depth: u32) -> u32 {
         }
 
         let next_pos = (next_row as usize, next_col as usize);
-        if let Some(&next) = map.get(&next_pos) {
-            if next == depth + 1 {
-                score += find_trail_b(next_pos, map, depth + 1);
-            }
+        let next = map.get_unchecked(&next_pos);
+
+        if *next == depth + 1 {
+            score += find_trail_b(next_pos, map, depth + 1);
         }
     }
 
@@ -115,20 +134,35 @@ fn find_trail_b(pos: (usize, usize), map: &Map<u32>, depth: u32) -> u32 {
 }
 
 pub fn b() -> u32 {
-    let lines: Vec<&str> = INPUT.lines().collect();
-    let rows = lines.len();
-    let cols = lines[0].len();
+    let mut lines_iter = INPUT.lines();
+    let first_line = lines_iter.next().unwrap();
+    let rows = 1 + lines_iter.clone().count();
+    let cols = first_line.len();
 
-    let mut data = Vec::with_capacity(rows * cols);
-    let mut starting_positions = Vec::new();
+    let mut data = vec![0u8; rows * cols];
+    let mut starting_positions = Vec::with_capacity(256);
 
-    for (row, line) in lines.iter().enumerate() {
-        for (col, c) in line.chars().enumerate() {
-            let value = c.to_digit(10).unwrap_or(20);
+    {
+        let bytes = first_line.as_bytes();
+        for col in 0..cols {
+            let value = bytes[col] - b'0';
+            if value == 0 {
+                starting_positions.push((0, col));
+            }
+            data[col] = value;
+        }
+    }
+
+    for (row, line) in lines_iter.enumerate() {
+        let row = row + 1;
+        let bytes = line.as_bytes();
+
+        for col in 0..cols {
+            let value = bytes[col] - b'0';
             if value == 0 {
                 starting_positions.push((row, col));
             }
-            data.push(value);
+            data[row * cols + col] = value;
         }
     }
 
