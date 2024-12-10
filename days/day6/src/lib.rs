@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 const INPUT: &str = include_str!("input.txt");
 
 struct Map<T> {
@@ -123,68 +125,93 @@ pub fn b() -> i32 {
 
     let mut map = Map { cols, data };
 
+    let mut visited_locations = HashSet::with_capacity(8192);
+
+    {
+        let mut dir = Dir::Up;
+        let mut pos = start;
+
+        loop {
+            let dir_vec = dir.vector();
+            let next = (
+                (pos.0 as isize + dir_vec.0) as usize,
+                (pos.1 as isize + dir_vec.1) as usize,
+            );
+
+            if next.0 >= rows || next.1 >= cols {
+                break;
+            }
+
+            let ahead_value = *map.get(&next);
+            if ahead_value == '#' {
+                dir = dir.turn_right();
+            } else {
+                pos = (next.0, next.1);
+                visited_locations.insert(pos);
+            }
+        }
+    }
+
     let mut count = 0;
     let mut visited = vec![0; rows * cols * 4];
     let mut current_generation = 1;
 
-    for row in 0..rows {
-        for col in 0..cols {
-            current_generation += 1;
-            let xy = (row, col);
+    for xy in visited_locations {
+        current_generation += 1;
 
-            let original = *map.get(&xy);
-            *map.get_mut(&xy) = '#';
+        let original = *map.get(&xy);
+        *map.get_mut(&xy) = '#';
 
-            let mut new_start = start;
-            let mut dir = Dir::Up;
+        let mut new_start = start;
+        let mut dir = Dir::Up;
 
-            'inner: loop {
-                let index = visited_index(cols, &new_start, dir);
-                if visited[index] == current_generation {
-                    count += 1;
-                    break 'inner;
-                } else {
-                    visited[index] = current_generation;
-                }
+        'inner: loop {
+            let index = visited_index(cols, &new_start, dir);
+            if visited[index] == current_generation {
+                count += 1;
+                break 'inner;
+            } else {
+                visited[index] = current_generation;
+            }
 
-                let dir_vec = dir.vector();
-                let ahead = (
-                    (new_start.0 as isize + dir_vec.0) as usize,
-                    (new_start.1 as isize + dir_vec.1) as usize,
-                );
+            let dir_vec = dir.vector();
+            let ahead = (
+                (new_start.0 as isize + dir_vec.0) as usize,
+                (new_start.1 as isize + dir_vec.1) as usize,
+            );
 
-                if ahead.0 >= rows || ahead.1 >= cols {
-                    break 'inner;
-                }
+            if ahead.0 >= rows || ahead.1 >= cols {
+                break 'inner;
+            }
 
-                let ahead_value = *map.get(&ahead);
-                if ahead_value == '#' {
-                    dir = dir.turn_right();
-                } else {
-                    loop {
-                        let dir_vec = dir.vector();
-                        let next = (
-                            (new_start.0 as isize + dir_vec.0) as usize,
-                            (new_start.1 as isize + dir_vec.1) as usize,
-                        );
-                        if next.0 >= rows || next.1 >= cols {
-                            break 'inner;
-                        }
+            let ahead_value = *map.get(&ahead);
+            if ahead_value == '#' {
+                dir = dir.turn_right();
+            } else {
+                loop {
+                    let dir_vec = dir.vector();
+                    let next = (
+                        (new_start.0 as isize + dir_vec.0) as usize,
+                        (new_start.1 as isize + dir_vec.1) as usize,
+                    );
+                    if next.0 >= rows || next.1 >= cols {
+                        break 'inner;
+                    }
 
-                        let map_value = *map.get(&next);
-                        if map_value != '#' {
-                            new_start = next;
-                            break;
-                        } else {
-                            dir = dir.turn_right();
-                        }
+                    let map_value = *map.get(&next);
+                    if map_value != '#' {
+                        new_start = next;
+                        break;
+                    } else {
+                        dir = dir.turn_right();
                     }
                 }
             }
-
-            *map.get_mut(&xy) = original;
         }
+
+        *map.get_mut(&xy) = original;
     }
+    // }
 
     count
 }

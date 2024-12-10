@@ -56,7 +56,7 @@ fn find_trail_a(pos: (usize, usize), map: &Map<u32>, used: &mut [bool], depth: u
 pub fn a() -> u32 {
     let lines: Vec<&str> = INPUT.lines().collect();
     let rows = lines.len();
-    let cols = if rows > 0 { lines[0].len() } else { 0 };
+    let cols = lines[0].len();
 
     let mut data = Vec::with_capacity(rows * cols);
     let mut starting_positions = Vec::new();
@@ -117,7 +117,7 @@ fn find_trail_b(pos: (usize, usize), map: &Map<u32>, depth: u32) -> u32 {
 pub fn b() -> u32 {
     let lines: Vec<&str> = INPUT.lines().collect();
     let rows = lines.len();
-    let cols = if rows > 0 { lines[0].len() } else { 0 };
+    let cols = lines[0].len();
 
     let mut data = Vec::with_capacity(rows * cols);
     let mut starting_positions = Vec::new();
