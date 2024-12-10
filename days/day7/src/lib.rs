@@ -49,6 +49,18 @@ pub fn a() -> u64 {
     count
 }
 
+fn count_digits(mut x: u64) -> u32 {
+    if x == 0 {
+        return 1;
+    }
+    let mut digits = 0;
+    while x > 0 {
+        digits += 1;
+        x /= 10;
+    }
+    digits
+}
+
 fn recurse_b(correct_value: u64, acc_in: u64, values: &[u64], depth: usize) -> bool {
     if depth == values.len() {
         return acc_in == correct_value;
@@ -65,9 +77,9 @@ fn recurse_b(correct_value: u64, acc_in: u64, values: &[u64], depth: usize) -> b
         let acc_add = acc_in + values[depth];
         recurse_b(correct_value, acc_add, values, depth + 1)
     } || {
-        let acc_con = format!("{}{}", acc_in, values[depth])
-            .parse::<u64>()
-            .unwrap();
+        let digits = count_digits(values[depth]);
+        let pow10 = 10u64.pow(digits);
+        let acc_con = acc_in * pow10 + values[depth];
         recurse_b(correct_value, acc_con, values, depth + 1)
     })
 }
